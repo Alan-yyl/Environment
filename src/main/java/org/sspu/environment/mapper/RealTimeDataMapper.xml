@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.sspu.environment.mapper.RealTimeDataMapper">
+    <resultMap id="baseResultMap" type="org.sspu.environment.model.RealTimeData">
+        <!--        <id/>标签表明数据库中的列，不作为结果返回-->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <!--        <result/>标签定义作为结果返回的列-->
+        <result column="nodeId" property="nodeId" jdbcType="INTEGER"/>
+        <result column="pH" property="pH" jdbcType="DOUBLE"/>
+        <result column="temperature" property="temperature" jdbcType="DOUBLE"/>
+        <result column="timeMillis" property="timeMillis" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <select id="selectAll" resultType= "org.sspu.environment.model.RealTimeData">
+        select nodeId,pH,temperature,date,timeMillis from real_time_data
+    </select>
+
+
+    <insert id="insertRealTimeData" parameterType="org.sspu.environment.model.RealTimeData">
+        insert into real_time_data (nodeId,pH,temperature,date,timeMillis) values (#{nodeId,jdbcType=INTEGER},#{pH,jdbcType=DOUBLE},#{temperature,jdbcType=DOUBLE},#{date,jdbcType=TIMESTAMP},#{timeMillis,jdbcType=BIGINT})
+    </insert>
+
+    <!--    使用test语句实现动态SQL,test=“判断”-->
+    <!--    limit参数：设置两个参数时候，前一个参数表示偏移，后一个表示最多查出的数据条数。-->
+    <select id="getDataByPage" resultMap="baseResultMap">
+        select * from real_time_data where nodeId=#{realTimeData.nodeId}
+        <if test="realTimeData.start!=null and realTimeData.finish!=null">
+            and timeMillis between #{realTimeData.start} and #{realTimeData.finish}
+        </if>
+        <if test="currentPage!=null and pageSize!=null">
+            limit #{currentPage},#{pageSize}
+        </if>
+    </select>
+
+
+<!--    获取数据总条数-->
+    <select id="getTotal" resultType="java.lang.Integer">
+        select count(*) from real_time_data where nodeId=#{realTimeData.nodeId}
+        <if test="realTimeData.start!=null and realTimeData.finish!=null">
+            and timeMillis between #{realTimeData.start} and #{realTimeData.finish}
+        </if>
+    </select>
+
+<!--    根据时间范围获取所有数据-->
+    <select id="getDataByDate" resultMap="baseResultMap">
+        select * from real_time_data where nodeId=#{realTimeData.nodeId}
+        <if test="realTimeData.start!=null and realTimeData.finish!=null">
+            and timeMillis between #{realTimeData.start} and #{realTimeData.finish}
+        </if>
+    </select>
+
+</mapper>
